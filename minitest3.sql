@@ -112,5 +112,25 @@ select phieunhap.ma_pn, vattu.ma_vat_tu, ctphieunhap.soluong, ctphieunhap.don_gi
 from ctphieunhap
 left join phieunhap on ctphieunhap.pn_id = phieunhap.id
 join vattu on ctphieunhap.vt_id = vattu.id;
-drop view vw_CTPNHAP;
 select * from vw_CTPNHAP;
+
+-- Câu 2. Tạo view có tên vw_CTPNHAP_VT bao gồm các thông tin sau: 
+-- số phiếu nhập hàng, mã vật tư, tên vật tư, số lượng nhập, đơn giá nhập, thành tiền nhập.
+
+create view vw_CTPNHAP_VT as
+select phieunhap.ma_pn, vattu.ma_vat_tu,vattu.ten_vat_tu, ctphieunhap.soluong, ctphieunhap.don_gia, (ctphieunhap.soluong*ctphieunhap.don_gia) as thanh_tien_nhap
+from ctphieunhap
+left join phieunhap on ctphieunhap.pn_id = phieunhap.id
+join vattu on ctphieunhap.vt_id = vattu.id;
+select * from vw_CTPNHAP_VT;
+
+-- Câu 3. Tạo view có tên vw_CTPNHAP_VT_PN bao gồm các thông tin sau: 
+-- số phiếu nhập hàng, ngày nhập hàng, số đơn đặt hàng, mã vật tư, tên vật tư, số lượng nhập, đơn giá nhập, thành tiền nhập.
+
+create view vw_CTPNHAP_VT_PN as
+select phieunhap.ma_pn, phieunhap.ngay_nhap, dondathang.ma_don, vattu.ma_vat_tu, vattu.ten_vat_tu,ctphieunhap.soluong, ctphieunhap.don_gia,(ctphieunhap.soluong*ctphieunhap.don_gia) as thanh_tien_nhap
+from ctphieunhap
+join phieunhap on ctphieunhap.pn_id = phieunhap.id
+join dondathang on phieunhap.donhang_id = dondathang.id
+join vattu on ctphieunhap.vt_id = vattu.id;
+select * from vw_CTPNHAP_VT_PN;
