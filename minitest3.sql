@@ -10,7 +10,8 @@ insert into vattu values(1,"@001", "Ti-vi", "unit", 150),
 (2,"@002", "Tu-lanh", "unit", 300),
 (3,"@003", "May-giat", "unit", 200),
 (4,"@004", "Lo-vi-song", "unit", 80),
-(5,"@005", "Dieu-hoa", "unit", 100);
+(5,"@005", "Dieu-hoa", "bo", 100);
+select * from vattu;
 create table tonkho(
 id int auto_increment primary key,
 soluongdau int,
@@ -97,11 +98,11 @@ ghi_chu varchar(255),
 foreign key (px_id) references phieuxuat(id),
 foreign key (vt_id) references vattu(id));
 insert into ctphieuxuat values (1,1,5,20,120,"done"),
-(2,1,4,15,100,"done"),
-(3,2,2,30,350,"done"),
-(4,3,2,40,350,"creatting"),
+(2,1,4,5,100,"done"),
+(3,2,2,10,350,"done"),
+(4,3,2,15,350,"creatting"),
 (5,2,2,20,350,"creatting"),
-(6,2,5,10,120,"creatting");
+(6,2,5,8,120,"creatting");
 select * from ctphieuxuat;
 
 -- Câu 1. Tạo view có tên vw_CTPNHAP bao gồm các thông tin sau: 
@@ -134,3 +135,83 @@ join phieunhap on ctphieunhap.pn_id = phieunhap.id
 join dondathang on phieunhap.donhang_id = dondathang.id
 join vattu on ctphieunhap.vt_id = vattu.id;
 select * from vw_CTPNHAP_VT_PN;
+
+-- Câu 4. Tạo view có tên vw_CTPNHAP_VT_PN_DH bao gồm các thông tin sau: 
+-- số phiếu nhập hàng, ngày nhập hàng, số đơn đặt hàng, mã nhà cung cấp, mã vật tư, tên vật tư, số lượng nhập, đơn giá nhập, thành tiền nhập.
+create view vw_CTPNHAP_VT_PN_DH as
+select phieunhap.ma_pn, phieunhap.ngay_nhap, dondathang.ma_don,nhacungcap.ma_ncc, vattu.ma_vat_tu, vattu.ten_vat_tu,ctphieunhap.soluong, ctphieunhap.don_gia,(ctphieunhap.soluong*ctphieunhap.don_gia) as thanh_tien_nhap
+from ctphieunhap
+join phieunhap on ctphieunhap.pn_id = phieunhap.id
+join dondathang on phieunhap.donhang_id = dondathang.id
+join vattu on ctphieunhap.vt_id = vattu.id
+join nhacungcap on dondathang.ncc_id = nhacungcap.id;
+select * from vw_CTPNHAP_VT_PN_DH;
+
+-- Câu 5. Tạo view có tên vw_CTPNHAP_loc  bao gồm các thông tin sau: 
+-- số phiếu nhập hàng, mã vật tư, số lượng nhập, đơn giá nhập, thành tiền nhập. Và chỉ liệt kê các chi tiết nhập có số lượng nhập > 5.
+
+create view  vw_CTPNHAP_loc as
+select phieunhap.ma_pn, vattu.ma_vat_tu, ctphieunhap.soluong, ctphieunhap.don_gia
+from ctphieunhap
+join phieunhap on ctphieunhap.pn_id = phieunhap.id
+join dondathang on phieunhap.donhang_id = dondathang.id
+join vattu on ctphieunhap.vt_id = vattu.id;
+select * from vw_CTPNHAP_loc;
+select ma_vat_tu, soluong from vw_CTPNHAP_loc where soluong>5;
+
+-- Câu 6. Tạo view có tên vw_CTPNHAP_VT_loc bao gồm các thông tin sau: 
+-- số phiếu nhập hàng, mã vật tư, tên vật tư, số lượng nhập, đơn giá nhập, thành tiền nhập. Và chỉ liệt kê các chi tiết nhập vật tư có đơn vị tính là Bộ.
+
+create view  vw_CTPNHAP_VT_loc as
+select phieunhap.ma_pn, vattu.ma_vat_tu,vattu.ten_vat_tu, ctphieunhap.soluong,vattu.don_vi, ctphieunhap.don_gia,(ctphieunhap.soluong*ctphieunhap.don_gia) as thanh_tien_nhap
+from ctphieunhap
+join phieunhap on ctphieunhap.pn_id = phieunhap.id
+join dondathang on phieunhap.donhang_id = dondathang.id
+join vattu on ctphieunhap.vt_id = vattu.id;
+select ten_vat_tu, don_vi from vw_CTPNHAP_VT_loc where don_vi = "bo" group by ten_vat_tu;
+
+-- Câu 7. Tạo view có tên vw_CTPXUAT bao gồm các thông tin sau: 
+-- số phiếu xuất hàng, mã vật tư, số lượng xuất, đơn giá xuất, thành tiền xuất.
+
+create view vw_CTPXUAT as
+select phieuxuat.ma_px, vattu.ma_vat_tu, ctphieuxuat.soluong,ctphieuxuat.don_gia as gia_xuat, (ctphieuxuat.soluong*ctphieuxuat.don_gia) as thanh_tien
+from ctphieuxuat
+join vattu on ctphieuxuat.vt_id = vattu.id
+join phieuxuat on ctphieuxuat.px_id = phieuxuat.id;
+select * from vw_CTPXUAT;
+
+-- Câu 8. Tạo view có tên vw_CTPXUAT_VT bao gồm các thông tin sau: 
+-- số phiếu xuất hàng, mã vật tư, tên vật tư, số lượng xuất, đơn giá xuất.
+create view vw_CTPXUAT_VT as
+select phieuxuat.ma_px, vattu.ma_vat_tu,vattu.ten_vat_tu, ctphieuxuat.soluong,ctphieuxuat.don_gia as gia_xuat
+from ctphieuxuat
+join vattu on ctphieuxuat.vt_id = vattu.id
+join phieuxuat on ctphieuxuat.px_id = phieuxuat.id;
+select * from vw_CTPXUAT_VT;
+
+-- Câu 9. Tạo view có tên vw_CTPXUAT_VT_PX bao gồm các thông tin sau: 
+-- số phiếu xuất hàng, tên khách hàng, mã vật tư, tên vật tư, số lượng xuất, đơn giá xuất.
+create view vw_CTPXUAT_VT_PX as
+select phieuxuat.ma_px,phieuxuat.ten_khach_hang, vattu.ma_vat_tu,vattu.ten_vat_tu, ctphieuxuat.soluong,ctphieuxuat.don_gia as gia_xuat
+from ctphieuxuat
+join vattu on ctphieuxuat.vt_id = vattu.id
+join phieuxuat on ctphieuxuat.px_id = phieuxuat.id;
+select * from vw_CTPXUAT_VT_PX;
+-- ----------------------------------------------------------
+-- Câu 1. Tạo Stored procedure (SP) cho biết tổng số lượng cuối của vật tư với mã vật tư là tham số vào.
+DELIMITER //
+CREATE PROCEDURE soluong(in ma_vt int, out tongsoluongcuoi int)
+begin 
+set tongsoluongcuoi = (select (sum(ctphieunhap.soluong)-sum(ctphieuxuat.soluong)) as soluong
+from tonkho
+join vattu on tonkho.vattu_id = vattu.id
+join ctphieuxuat on ctphieuxuat.vt_id = vattu.id
+join ctphieunhap on ctphieunhap.vt_id = vattu.id where vattu.id = ma_vt group by vattu.id);
+END //
+DELIMITER ;
+call soluong(2, @tongsoluongcuoi);
+select @tongsoluongcuoi;
+
+
+
+
