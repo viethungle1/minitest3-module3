@@ -72,6 +72,7 @@ insert into ctdonhang values(1,1,1,50),
 insert into ctdonhang values(4,3,5,5),
 (5,3,4,20),
 (6,2,1,15);
+select * from ctdonhang;
 create table ctphieunhap(
 id int auto_increment primary key,
 pn_id int,
@@ -209,8 +210,51 @@ join ctphieuxuat on ctphieuxuat.vt_id = vattu.id
 join ctphieunhap on ctphieunhap.vt_id = vattu.id where vattu.id = ma_vt group by vattu.id);
 END //
 DELIMITER ;
-call soluong(2, @tongsoluongcuoi);
+call soluong(4, @tongsoluongcuoi);
+use minitest3;
 select @tongsoluongcuoi;
+-- Câu 2. Tạo SP cho biết tổng tiền xuất của vật tư với mã vật tư là tham số vào, out là tổng tiền xuất
+DELIMITER //
+CREATE PROCEDURE tongxuat(in ma_vt int, out tongtienxuat int)
+BEGIN 
+set tongtienxuat = (select(sum(ctphieuxuat.don_gia)*sum(ctphieuxuat.soluong)) as tongtienxuat
+from vattu
+join ctphieuxuat on vattu.id = ctphieuxuat.id where vattu.id = ma_vt);
+END //
+DELIMITER ;
+call tongxuat(2,@tongtien);
+select @tongtien;
+DROP PROCEDURE tongxuat;
+
+-- Câu 3. Tạo SP cho biết tổng số lượng đặt theo số đơn hàng với số đơn hàng là tham số vào.
+DELIMITER //
+CREATE PROCEDURE tong_dat(in ma_don int)
+BEGIN
+select ctdonhang.dh_id, sum(ctdonhang.soluong)
+from ctdonhang 
+join dondathang on ctdonhang.dh_id = dondathang.id where ctdonhang.dh_id = ma_don;
+END //
+DELIMITER ;
+call tong_dat(5);
+select * from ctdonhang;
+drop procedure tong_dat;
+
+-- Câu 4. Tạo SP dùng để thêm một đơn đặt hàng.
+
+DELIMITER //
+CREATE PROCEDURE themdonhang(in id int, in ma_don varchar(20), in ngay_dh date, in ncc_id int)
+BEGIN
+insert into dondathang values (id, ma_don, ngay_dh, ncc_id);
+END //
+DELIMITER ;
+
+-- Câu 5. Tạo SP dùng để thêm một chi tiết đơn đặt hàng.
+DELIMITER //
+CREATE PROCEDURE themctdonhang(in id int, in dh_id int, in vt_id int, in soluong int)
+BEGIN
+insert into ctdonhang values (id, dh_id, vt_id, soluong);
+END //
+DELIMITER ;
 
 
 
